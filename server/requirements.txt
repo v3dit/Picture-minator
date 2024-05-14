@@ -1,0 +1,6 @@
+Flask==2.0.2
+numpy
+google-generativeai
+matplotlib
+Pillow
+altair<5
