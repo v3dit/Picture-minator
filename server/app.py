@@ -1,12 +1,14 @@
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, send_file
 from PIL import Image, ImageOps, ImageEnhance
 import cv2
 import numpy as np
-from io import BytesIO
-import base64
-
+import os
 
 app = Flask(__name__)
+
+UPLOAD_FOLDER = 'static/'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 def calculate_rule_of_thirds(image):
     img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
@@ -116,7 +118,12 @@ def index():
         file = request.files['file']
         if file:
             original_image = Image.open(file)
-            
+
+            original_image_path = os.path.join(UPLOAD_FOLDER, 'original.jpg')
+            enhanced_image_path = os.path.join(UPLOAD_FOLDER, 'enhanced.jpg')
+
+            original_image.save(original_image_path)
+
             # Calculate scores for the original image
             comp_score = calculate_rule_of_thirds(original_image)
             bal_score = calculate_color_balance(original_image)
@@ -128,6 +135,7 @@ def index():
 
             # Enhance the image
             enhanced_image = enhance_image(original_image)
+            enhanced_image.save(enhanced_image_path)
 
             # Calculate scores for the enhanced image
             enhanced_comp_score = calculate_rule_of_thirds(enhanced_image)
@@ -137,7 +145,7 @@ def index():
             enhanced_sat_score = calculate_saturation(enhanced_image)
             enhanced_brightness_score = calculate_brightness(enhanced_image)
             enhanced_noise_score = calculate_noise(enhanced_image)
-
+            
             # Combine scores for comparison
             original_scores = {
                 'Composition': comp_score,
@@ -160,20 +168,17 @@ def index():
             }
 
             return render_template('result.html', 
-                                   original_image=file.read(), 
-                                   enhanced_image=enhanced_image, 
-                                   original_scores=original_scores, 
-                                   enhanced_scores=enhanced_scores)
+                       original_image=original_image_path, 
+                       enhanced_image=enhanced_image_path, 
+                       original_scores=original_scores, 
+                       enhanced_scores=enhanced_scores)
 
     return render_template('index.html')
 
 @app.route('/download')
 def download():
-    enhanced_image = request.args.get('image')
-    # Remove padding characters from the base64 string
-    enhanced_image = enhanced_image.replace(' ', '+')
-    enhanced_image_bytes = base64.b64decode(enhanced_image)
-    return send_file(BytesIO(enhanced_image_bytes), as_attachment=True)
+    enhanced_image_path = request.args.get('image')
+    return send_file(enhanced_image_path, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
