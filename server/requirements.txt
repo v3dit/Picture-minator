@@ -1,9 +1,0 @@
-Flask
-flask
-numpy
-google-generativeai
-matplotlib
-Pillow
-altair<5
-cv
-opencv-python

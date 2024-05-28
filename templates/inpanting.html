@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picture Minator: Image Inpainting</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        #inpainting_tools {
+            margin-top: 10px;
+        }
+        .tool-button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Picture Minator: Image Inpainting</h1>
+    <img src="{{ url_for('static', filename=image_path.split('/')[-1]) }}" alt="Original Image" id="original_image" style="display: none;">
+    <form method="post">
+        <label>
+            <input type="checkbox" name="apply_inpainting" id="apply_inpainting">
+            Apply Inpainting
+        </label><br>
+        <div id="inpainting_tools" style="display: none;">
+            <label>Brush Size:</label>
+            <input type="range" id="brush_size" name="brush_size" min="1" max="100" value="50">
+            <button type="button" id="clear_button" class="tool-button">Clear Paint</button>
+            <canvas id="canvas" width="720" height="480"></canvas>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+    <script>
+        const applyInpaintingCheckbox = document.getElementById('apply_inpainting');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const brushSizeInput = document.getElementById('brush_size');
+        const clearButton = document.getElementById('clear_button');
+        const originalImage = document.getElementById('original_image');
+
+        let painting = false;
+        let img = new Image();
+
+        applyInpaintingCheckbox.addEventListener('change', function() {
+            document.getElementById('inpainting_tools').style.display = this.checked ? 'block' : 'none';
+            if (this.checked) {
+                loadImageToCanvas();
+            } else {
+                clearCanvas();
+            }
+        });
+
+        function loadImageToCanvas() {
+            img.src = originalImage.src;
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            painting = false;
+            ctx.beginPath();
+        }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = brushSizeInput.value;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'rgba(255, 0, 255, 0.5)';
+            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        clearButton.addEventListener('click', clearCanvas);
+
+        document.forms[0].addEventListener('submit', function(event) {
+            if (applyInpaintingCheckbox.checked) {
+                const dataURL = canvas.toDataURL();
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'canvas_data';
+                input.value = dataURL;
+                this.appendChild(input);
+            }
+        });
+    </script>
+</body>
+</html>

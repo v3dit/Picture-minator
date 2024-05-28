@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+    <title>Image Result</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .image-container div {
+            flex: 1;
+            max-width: 45%;
+            margin: 10px;
+            text-align: center;
+        }
+        .image-container img {
+            max-width: 100%;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .download-link, .home-link {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            text-align: center;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .download-link:hover, .home-link:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Comparison</h1>
+    <a href="/" class="home-link">Home</a>
+    <div class="image-container">
+        <div>
+            <h2>Original Image</h2>
+            <img src="{{ original_image }}" alt="Original Image">
+        </div>
+        <div>
+            <h2>Enhanced Image</h2>
+            <img src="{{ enhanced_image }}" alt="Enhanced Image">
+        </div>
+    </div>
+
+    <h2>Scores</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Original</th>
+                <th>Enhanced</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, value in original_scores.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                    <td>{{ enhanced_scores[key] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="/download?image={{ enhanced_image }}" class="download-link">Download Enhanced Image</a>
+    <a href="/run_editor" class="download-link">Edit In Pro Editor</a>
+    <br />
+    <md-block>{{ captions }}</md-block>
+    <br />
+    <br />
+</body>
+</html>
